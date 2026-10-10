@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ru" data-theme="premium">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Lumen — планер</title>
+  <meta name="description" content="Красивый календарь-планер с быстрыми задачами, заметками и вдохновением дня" />
+  <meta name="theme-color" content="#f7efe9" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Lumen" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@1,500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span><span class="blob b4"></span>
+  </div>
+
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="greet" id="greet">Добрый день</div>
+        <div class="today-line" id="todayLine"></div>
+      </div>
+      <nav class="seg" id="viewSeg" role="tablist" aria-label="Вид календаря">
+        <button role="tab" data-view="day">День</button>
+        <button role="tab" data-view="week">Неделя</button>
+        <button role="tab" data-view="month">Месяц</button>
+        <button role="tab" data-view="year">Год</button>
+        <span class="seg-pill" aria-hidden="true"></span>
+      </nav>
+      <div class="actions">
+        <button class="icon-btn" data-action="search" title="Поиск (/)" aria-label="Поиск"><span class="i-search"></span></button>
+        <button class="icon-btn" data-action="themes" title="Оформление" aria-label="Оформление"><span class="i-palette"></span></button>
+        <button class="icon-btn" data-action="notes" title="Заметки (P)" aria-label="Заметки"><span class="i-notes"></span></button>
+        <button class="icon-btn" data-action="menu" title="Ещё" aria-label="Меню"><span class="i-more"></span></button>
+      </div>
+    </header>
+
+    <div class="layout" id="layout">
+      <main class="main">
+        <section class="quote glass" id="quote" aria-live="polite"></section>
+        <div id="banners"></div>
+        <div class="view-head">
+          <div class="nav">
+            <button class="icon-btn sm" data-action="prev" aria-label="Назад"><span class="i-left"></span></button>
+            <h1 id="viewTitle"></h1>
+            <button class="icon-btn sm" data-action="next" aria-label="Вперёд"><span class="i-right"></span></button>
+          </div>
+          <button class="chip-btn" data-action="today">Сегодня</button>
+        </div>
+        <div class="filters" id="filters"></div>
+        <div id="viewBody" class="view-body"></div>
+      </main>
+
+      <aside class="notes glass" id="notesPanel" aria-label="Заметки">
+        <div class="notes-head">
+          <div class="tabs" id="panelTabs">
+            <button data-tab="notes">Заметки</button>
+            <button data-tab="someday">Когда-нибудь</button>
+          </div>
+          <button class="icon-btn sm notes-close" data-action="notes" aria-label="Закрыть"><span class="i-close"></span></button>
+        </div>
+        <div class="tab-pane" data-pane="notes">
+          <form class="note-new" id="noteForm">
+            <textarea id="noteInput" rows="3" placeholder="Быстрая мысль, идея, список…"></textarea>
+            <div class="note-new-foot">
+              <span class="hint">⌘ + Enter — сохранить</span>
+              <button type="submit" class="btn-primary sm">Сохранить</button>
+            </div>
+          </form>
+          <input class="note-search" id="noteSearch" type="search" placeholder="Поиск по заметкам" />
+          <div class="notes-list" id="notesList"></div>
+        </div>
+        <div class="tab-pane" data-pane="someday">
+          <p class="pane-hint">Задачи без даты: идеи и дела «когда-нибудь». Перетащи задачу на день в календаре или зажми её, чтобы назначить дату.</p>
+          <form class="inline-add" id="somedayAdd" autocomplete="off">
+            <input id="somedayInput" placeholder="Например: выучить испанский" />
+            <button class="btn-primary sm" type="submit">+</button>
+          </form>
+          <div class="someday-list" id="somedayList"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div class="scrim" data-action="notes"></div>
+
+  <form class="quickadd glass" id="quickAdd" autocomplete="off">
+    <span class="qa-plus" aria-hidden="true"></span>
+    <input id="qaInput" enterkeyhint="done" placeholder="Новая задача: «завтра в 10 позвонить маме !!»" aria-label="Новая задача" />
+    <div class="qa-chips" id="qaChips"></div>
+    <button type="button" class="qa-mic" id="qaMic" data-action="voice" aria-label="Надиктовать" hidden><span class="i-mic"></span></button>
+    <button type="submit" class="qa-send" aria-label="Добавить"><span class="i-up"></span></button>
+  </form>
+
+  <!-- Задача -->
+  <dialog class="sheet" id="taskSheet">
+    <form method="dialog" class="sheet-inner" id="taskForm">
+      <div class="sheet-grab"></div>
+      <input class="sheet-title" name="title" placeholder="Название задачи" required />
+      <div class="field-row">
+        <label class="field"><span>Дата</span><input type="date" name="date" /></label>
+        <label class="field"><span>Время</span><input type="time" name="time" /></label>
+      </div>
+      <div class="field">
+        <span>Повтор</span>
+        <div class="pick" id="repeatPick"></div>
+        <div class="pick wd-pick" id="wdPick" hidden></div>
+      </div>
+      <div class="field">
+        <span>Категория</span>
+        <div class="pick" id="catPick"></div>
+      </div>
+      <div class="field">
+        <span>Приоритет</span>
+        <div class="prio-seg" id="prioSeg">
+          <button type="button" data-p="0">Обычный</button>
+          <button type="button" data-p="1" class="p1">!</button>
+          <button type="button" data-p="2" class="p2">!!</button>
+          <button type="button" data-p="3" class="p3">!!!</button>
+        </div>
+      </div>
+      <div class="field bday-row">
+        <label class="switch"><input type="checkbox" name="birthday" /><i></i><span>🎂 Это день рождения</span></label>
+        <label class="by-year" id="byYear"><span>Год рождения</span><input type="number" name="birthYear" min="1900" max="2100" inputmode="numeric" placeholder="1995" /></label>
+      </div>
+      <label class="field"><span>Заметка</span><textarea name="note" rows="3" placeholder="Детали, ссылки, мысли…"></textarea></label>
+      <div class="sheet-actions" id="taskActions"></div>
+    </form>
+  </dialog>
+
+  <!-- Развёрнутый день -->
+  <dialog class="sheet day-sheet" id="daySheet">
+    <div class="sheet-inner">
+      <div class="sheet-grab"></div>
+      <div id="daySheetBody"></div>
+      <form class="inline-add" id="dayAdd" autocomplete="off">
+        <input id="dayAddInput" placeholder="Добавить задачу на этот день…" />
+        <button class="btn-primary sm" type="submit">Добавить</button>
+      </form>
+      <div class="sheet-actions">
+        <button type="button" class="btn-ghost" data-action="open-day-view">Открыть день целиком</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn-ghost" data-action="sheet-close">Готово</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Быстрые действия с задачей -->
+  <dialog class="sheet action-sheet" id="actionSheet">
+    <div class="sheet-inner" id="actionBody"></div>
+  </dialog>
+
+  <!-- Мой день -->
+  <dialog class="sheet brief-sheet" id="briefSheet">
+    <div class="sheet-inner" id="briefBody"></div>
+  </dialog>
+
+  <!-- Итоги недели -->
+  <dialog class="sheet" id="reviewSheet">
+    <div class="sheet-inner" id="reviewBody"></div>
+  </dialog>
+
+  <!-- Оформление -->
+  <dialog class="sheet" id="themeSheet">
+    <div class="sheet-inner" id="themeBody"></div>
+  </dialog>
+
+  <!-- Поиск -->
+  <dialog class="sheet search-sheet" id="searchSheet">
+    <div class="sheet-inner">
+      <div class="search-box"><span class="i-search"></span><input id="searchInput" type="search" placeholder="Искать задачи и заметки" autocomplete="off" /></div>
+      <div id="searchResults" class="search-results"></div>
+    </div>
+  </dialog>
+
+  <!-- Меню -->
+  <dialog class="sheet" id="menuSheet">
+    <div class="sheet-inner">
+      <div class="sheet-grab"></div>
+      <h3>Lumen</h3>
+      <div class="menu-list">
+        <button data-action="sync"><span>☁️</span> <span id="syncLabel">Синхронизация</span></button>
+        <button data-action="brief"><span>☀️</span> Мой день</button>
+        <button data-action="review"><span>📊</span> Итоги недели</button>
+        <button data-action="themes"><span>🎨</span> Оформление и фон</button>
+        <button data-action="reminders"><span>🔔</span> <span id="remindLabel">Напоминания</span></button>
+        <button data-action="help"><span>✨</span> Как быстро добавлять задачи</button>
+        <button data-action="claude"><span>🤖</span> Задачи из Claude</button>
+        <button data-action="export"><span>⬇️</span> Сохранить резервную копию</button>
+        <button data-action="import"><span>⬆️</span> Восстановить из копии</button>
+        <button data-action="clear-done"><span>🧹</span> Убрать выполненные старше 30 дней</button>
+      </div>
+      <div class="sheet-actions"><span class="spacer"></span><button class="btn-ghost" data-action="sheet-close">Закрыть</button></div>
+      <input type="file" id="importFile" accept="application/json,.json" hidden />
+    </div>
+  </dialog>
+
+  <!-- Синхронизация -->
+  <dialog class="sheet" id="syncSheet">
+    <div class="sheet-inner" id="syncBody"></div>
+  </dialog>
+
+  <!-- Справка -->
+  <dialog class="sheet" id="helpSheet">
+    <div class="sheet-inner prose" id="helpBody"></div>
+  </dialog>
+
+  <canvas id="confetti" aria-hidden="true"></canvas>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
