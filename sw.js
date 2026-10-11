@@ -5,7 +5,7 @@
 // Файлы приложения запрашиваем мимо HTTP-кэша браузера (уникальный ?v=…), чтобы не получить
 // устаревшую копию. Номер VERSION совпадает с lumen-build в index.html и BUILD в app.js.
 
-const VERSION = 'lumen-v10';
+const VERSION = 'lumen-v11';
 const RUNTIME = 'lumen-runtime-v1';
 const ASSETS = [
   './', 'index.html', 'css/styles.css',

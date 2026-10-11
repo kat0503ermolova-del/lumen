@@ -1556,7 +1556,7 @@ import('./sync.js')
 
 // Страница и скрипт должны быть одной версии. Если браузер собрал смесь старых и новых файлов,
 // один раз очищаем сохранённые файлы приложения и перезагружаемся.
-const BUILD = '10';
+const BUILD = '11';
 {
   const pageBuild = document.querySelector('meta[name="lumen-build"]')?.content;
   let healed = false;

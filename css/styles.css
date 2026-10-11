@@ -1296,3 +1296,7 @@ body.notes-open .quickadd { opacity: 0; pointer-events: none; }
   .focus-bar .seg button { padding: 6px 8px; font-size: 13px; }
   .focus-bar .chip-btn { padding: 6px 10px; }
 }
+
+/* Все кружки на одной линии: у задач с категорией больше нет отдельного отступа */
+.task[class*="cat-"] { padding-left: 6px; }
+.task.compact, .task.compact[class*="cat-"] { padding-left: 4px; padding-right: 4px; }
