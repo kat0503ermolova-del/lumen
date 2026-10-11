@@ -40,15 +40,18 @@ const uid = () => {
 /* ───────────── Справочники ───────────── */
 
 const CATEGORIES = {
-  work: { label: 'Работа', emoji: '💼' },
-  personal: { label: 'Личное', emoji: '💖' },
+  work: { label: 'Работа' },
+  personal: { label: 'Личное' },
 };
 
 const THEMES = [
-  ['gold', 'Золото', 'Слоновая кость и тонкое золото'],
-  ['pink', 'Розовый', 'Чистый розовый, без лишнего'],
+  ['gold', 'Золото', 'Тёплое яркое золото'],
+  ['silver', 'Серебро', 'Холодный металлик'],
+  ['pink', 'Розовый', 'Чистый розовый'],
+  ['white', 'Белая', 'Только белый и чёрный'],
+  ['black', 'Чёрная', 'Чистый чёрный'],
   ['night', 'Ночь', 'Тёмная, с ярким градиентом'],
-  ['auto', 'Авто', 'Днём Золото, вечером Ночь'],
+  ['auto', 'Авто', 'Днём Белая, вечером Чёрная'],
 ];
 // старые названия тем из прошлых версий
 prefs.theme = { premium: 'gold', sunset: 'pink', neon: 'night', midnight: 'night' }[prefs.theme] || prefs.theme;
@@ -56,9 +59,9 @@ if (!THEMES.some(([id]) => id === prefs.theme)) prefs.theme = 'gold';
 const effectiveTheme = () => {
   if (prefs.theme !== 'auto') return prefs.theme;
   const h = new Date().getHours();
-  return h >= 7 && h < 20 ? 'gold' : 'night';
+  return h >= 7 && h < 20 ? 'white' : 'black';
 };
-const THEME_COLOR = { gold: '#f9f6f0', pink: '#fff5f8', night: '#07060f' };
+const THEME_COLOR = { gold: '#fbf6ea', silver: '#f3f4f6', pink: '#fff5f8', white: '#ffffff', black: '#000000', night: '#07060f' };
 
 /* ───────────── Утилиты ───────────── */
 
@@ -125,7 +128,7 @@ function hydrateIcons(root = document) {
 /* ───────────── Состояние ───────────── */
 
 let cursor = fromKey(todayKey());
-let view = prefs.view;
+let view = ['day', 'week', 'month', 'year'].includes(prefs.view) ? prefs.view : 'day';
 let openDayKey = null;
 let editing = null; // { id, k }
 
@@ -283,7 +286,7 @@ function taskRow(it, { showDate = false, compact = false } = {}) {
   if (bday && it.k && ageOn(t, it.k)) meta.push(`<span>исполняется ${ageOn(t, it.k)}</span>`);
   if (t.repeat && !bday && !compact) meta.push(`<span>${icon('repeat')}${esc(describeRepeat(t.repeat, t.date))}</span>`);
   else if (t.repeat && !bday) meta.push(`<span>${icon('repeat')}</span>`);
-  if (t.category && CATEGORIES[t.category] && !compact) meta.push(`<span><i class="em">${CATEGORIES[t.category].emoji}</i>${CATEGORIES[t.category].label}</span>`);
+  if (t.category && CATEGORIES[t.category] && !compact) meta.push(`<span><i class="cat-dot"></i>${CATEGORIES[t.category].label}</span>`);
   if (t.note && !compact) meta.push(`<span>${icon('note')}</span>`);
   const cls = ['task', it.done && 'done', compact && 'compact', `p${t.priority || 0}`, t.category && `cat-${t.category}`, bday && 'bday'].filter(Boolean).join(' ');
   return `<div class="${cls}" ${dragAttr(it)}>
@@ -293,14 +296,6 @@ function taskRow(it, { showDate = false, compact = false } = {}) {
       ${meta.length ? `<span class="task-meta">${meta.join('')}</span>` : ''}
     </button>
   </div>`;
-}
-
-function progressRing(done, total) {
-  const p = total ? done / total : 0;
-  const C = 2 * Math.PI * 22;
-  return `<div class="ring" title="${done} из ${total}">
-    <svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="22" class="ring-bg"/><circle cx="26" cy="26" r="22" class="ring-fg" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - p)}"/></svg>
-    <span>${total ? Math.round(p * 100) + '%' : '—'}</span></div>`;
 }
 
 function dayContent(k, { full = false } = {}) {
@@ -313,13 +308,13 @@ function dayContent(k, { full = false } = {}) {
   const rel = relDayLabel(k);
   const off = isOffDay(k, d.getDay());
 
+  const doneCount = work.filter((it) => it.done).length;
+  const dateText = `${fmt(d, { day: 'numeric', month: 'long' })}${d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''}`;
   let html = `<div class="day-hero">
-    <div>
-      <div class="day-kicker">${rel ? rel + ' · ' : ''}${cap(fmt(d, { weekday: 'long' }))}${off ? ' · <span class="offword">выходной</span>' : ''}</div>
-      <div class="day-big">${fmt(d, { day: 'numeric', month: 'long' })}${d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''}</div>
-      <div class="hchips">${holidayChips(k)}</div>
-    </div>
-    ${progressRing(work.filter((it) => it.done).length, work.length)}
+    ${full ? `<button class="day-big" data-action="to-month" title="Открыть месяц">${dateText}</button>` : `<div class="day-big">${dateText}</div>`}
+    <div class="day-kicker">${rel ? rel + ' · ' : ''}${cap(fmt(d, { weekday: 'long' }))}${off ? ' · <span class="offword">выходной</span>' : ''}${work.length ? ` · ${doneCount} из ${work.length}` : ''}</div>
+    ${work.length ? `<div class="day-progress"><i style="width:${Math.round((doneCount / work.length) * 100)}%"></i></div>` : ''}
+    <div class="hchips">${holidayChips(k)}</div>
   </div>`;
 
   if (full && isToday) {
@@ -346,7 +341,7 @@ function dayContent(k, { full = false } = {}) {
 function renderDay() {
   const k = toKey(cursor);
   $('#viewTitle').textContent = relDayLabel(k) || cap(fmt(cursor, { weekday: 'short', day: 'numeric', month: 'long' }));
-  return `<div class="day-view glass" data-drop="${k}">${dayContent(k, { full: true })}</div>`;
+  return `<div class="day-view" data-drop="${k}">${dayContent(k, { full: true })}</div>`;
 }
 
 function renderWeek() {
@@ -356,21 +351,18 @@ function renderWeek() {
     ? `${start.getDate()}–${fmt(end, { day: 'numeric', month: 'long' })}`
     : `${fmt(start, { day: 'numeric', month: 'short' })} – ${fmt(end, { day: 'numeric', month: 'short' })}`;
   const tk = todayKey();
-  let html = '<div class="week">';
+  let html = '<div class="wlist">';
   for (let i = 0; i < 7; i++) {
     const d = addDays(start, i);
     const k = toKey(d);
     const list = sortItems(itemsOn(k));
-    const work = workItems(list);
-    const off = isOffDay(k, d.getDay());
-    html += `<section class="wday glass${k === tk ? ' is-today' : ''}${off ? ' is-off' : ''}" data-drop="${k}">
-      <button class="wday-head" data-action="open-day" data-key="${k}">
-        <span class="wd">${WD_SHORT[i]}</span><span class="wn">${d.getDate()}</span>
-        <span class="wcount">${work.length ? `${work.filter((it) => it.done).length}/${work.length}` : ''}</span>
-      </button>
-      <div class="hchips">${holidayChips(k)}</div>
-      <div class="wtasks">${list.map((it) => taskRow(it, { compact: true })).join('')}</div>
-      <button class="wadd" data-action="open-day" data-key="${k}" aria-label="Добавить">${icon('plus')}</button>
+    const cls = ['wrow', k === tk && 'is-today', isOffDay(k, d.getDay()) && 'is-off'].filter(Boolean).join(' ');
+    html += `<section class="${cls}" data-drop="${k}">
+      <button class="wdate" data-action="open-day" data-key="${k}"><span class="wd">${WD_SHORT[i]}</span><span class="wn">${d.getDate()}</span></button>
+      <div class="wbody">
+        ${holidaysOn(k).length ? `<div class="hchips">${holidayChips(k)}</div>` : ''}
+        ${list.length ? list.map((it) => taskRow(it, { compact: true })).join('') : `<button class="wempty" data-action="open-day" data-key="${k}">Свободно</button>`}
+      </div>
     </section>`;
   }
   return html + '</div>';
@@ -429,6 +421,73 @@ function renderYear() {
   return html + '</div>';
 }
 
+function renderStrip() {
+  const strip = $('#strip');
+  if (view !== 'day') { strip.innerHTML = ''; return; }
+  const start = startOfWeek(cursor);
+  const tk = todayKey();
+  const ck = toKey(cursor);
+  let days = '';
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(start, i);
+    const k = toKey(d);
+    const items = itemsOn(k);
+    const busy = items.some((it) => !it.done);
+    const cls = ['sday', k === ck && 'on', k === tk && 'today', isOffDay(k, d.getDay()) && 'off'].filter(Boolean).join(' ');
+    days += `<button class="${cls}" data-action="pick-day" data-key="${k}" data-drop="${k}">
+      <span class="sw">${WD_SHORT[i]}</span><span class="sn">${d.getDate()}</span><span class="sdot">${busy ? '<i></i>' : ''}</span></button>`;
+  }
+  strip.innerHTML = `<button class="strip-arrow" data-action="week-prev" aria-label="Прошлая неделя">${icon('left')}</button>
+    <div class="strip-days">${days}</div>
+    <button class="strip-arrow" data-action="week-next" aria-label="Следующая неделя">${icon('right')}</button>`;
+}
+
+// Правая колонка на компьютере: мини-месяц и ближайшие дела
+const wide = matchMedia('(min-width: 1000px)');
+wide.addEventListener?.('change', () => renderSide());
+
+let sideMonth = null; // месяц, пролистанный стрелками мини-календаря
+
+function renderSide() {
+  if (!wide.matches) { $('#sideCal').innerHTML = ''; $('#sideNext').innerHTML = ''; return; }
+  const base = sideMonth || cursor;
+  const y = base.getFullYear(), m = base.getMonth();
+  const first = new Date(y, m, 1);
+  const start = startOfWeek(first);
+  const weeks = Math.ceil(((first.getDay() + 6) % 7 + new Date(y, m + 1, 0).getDate()) / 7);
+  const tk = todayKey();
+  const ck = toKey(cursor);
+  let cells = WD_SHORT.map((w) => `<span class="cw">${w[0]}</span>`).join('');
+  for (let i = 0; i < weeks * 7; i++) {
+    const d = addDays(start, i);
+    const k = toKey(d);
+    const busy = itemsOn(k).some((it) => !it.done);
+    const cls = ['cd', d.getMonth() !== m && 'out', k === tk && 'today', k === ck && 'on', isOffDay(k, d.getDay()) && 'off', busy && 'busy'].filter(Boolean).join(' ');
+    cells += `<button class="${cls}" data-action="open-day" data-key="${k}" data-drop="${k}">${d.getDate()}</button>`;
+  }
+  $('#sideCal').innerHTML = `<div class="side-card">
+    <div class="side-head">
+      <button class="side-title" data-action="side-month" data-y="${y}" data-m="${m}">${MONTHS_NOM[m]} ${y}</button>
+      <span><button class="strip-arrow" data-action="side-prev" aria-label="Прошлый месяц">${icon('left')}</button><button class="strip-arrow" data-action="side-next" aria-label="Следующий месяц">${icon('right')}</button></span>
+    </div>
+    <div class="cgrid">${cells}</div></div>`;
+
+  const next = [];
+  for (let i = 1; i <= 14 && next.length < 6; i++) {
+    const k = addKey(tk, i);
+    for (const it of sortItems(itemsOn(k))) {
+      if (!it.done && next.length < 6) next.push(it);
+    }
+  }
+  $('#sideNext').innerHTML = `<div class="side-card">
+    <div class="side-label">Ближайшее</div>
+    ${next.length ? next.map((it) => `<button class="next-row" data-action="open-day" data-key="${it.k}">
+      <span class="next-date">${esc(shortDate(it.k))}</span>
+      <span class="next-title">${it.t.kind === 'birthday' ? '🎂 ' : ''}${esc(it.t.title)}</span></button>`).join('')
+    : '<div class="side-empty">Две недели свободны</div>'}
+  </div>`;
+}
+
 /* ───────────── Шапка, баннеры, цитата, фильтры ───────────── */
 
 function greeting() {
@@ -485,8 +544,7 @@ function renderBanners() {
 function renderQuote() {
   const dayIndex = Math.floor(fromKey(todayKey()).getTime() / 864e5);
   const [text, author] = quoteFor(dayIndex + prefs.quoteShift);
-  $('#quote').innerHTML = `<div class="q-label">Вдохновение дня</div>
-    <blockquote>${esc(text)}</blockquote>
+  $('#quote').innerHTML = `<blockquote>${esc(text)}</blockquote>
     <div class="q-foot">${author ? `<span class="q-author">— ${esc(author)}</span>` : ''}
     <button class="icon-btn xs" data-action="quote-next" title="Другая цитата" aria-label="Другая цитата">${icon('refresh')}</button></div>`;
 }
@@ -510,7 +568,7 @@ function renderFilters() {
   if (!used.size) { $('#filters').innerHTML = ''; return; }
   $('#filters').innerHTML = `<button class="fchip${!prefs.filter ? ' on' : ''}" data-action="filter" data-cat="">Все</button>`
     + Object.entries(CATEGORIES).filter(([id]) => used.has(id))
-      .map(([id, c]) => `<button class="fchip cat-${id}${prefs.filter === id ? ' on' : ''}" data-action="filter" data-cat="${id}"><i class="em">${c.emoji}</i>${c.label}</button>`).join('');
+      .map(([id, c]) => `<button class="fchip cat-${id}${prefs.filter === id ? ' on' : ''}" data-action="filter" data-cat="${id}"><i class="cat-dot"></i>${c.label}</button>`).join('');
 }
 
 /* ───────────── Панель: заметки и «когда-нибудь» ───────────── */
@@ -568,6 +626,10 @@ function render() {
   renderHeader();
   renderBanners();
   renderFilters();
+  document.body.dataset.mode = view;
+  renderStrip();
+  sideMonth = null;
+  renderSide();
   const body = $('#viewBody');
   body.dataset.view = view;
   body.innerHTML = view === 'day' ? renderDay() : view === 'week' ? renderWeek() : view === 'month' ? renderMonth() : renderYear();
@@ -662,7 +724,7 @@ function renderPickers() {
   }
   const cat = form.dataset.cat;
   $('#catPick').innerHTML = `<button type="button" class="pchip${!cat ? ' on' : ''}" data-cat="">Без категории</button>`
-    + Object.entries(CATEGORIES).map(([id, c]) => `<button type="button" class="pchip cat-${id}${cat === id ? ' on' : ''}" data-cat="${id}"><i class="em">${c.emoji}</i>${c.label}</button>`).join('');
+    + Object.entries(CATEGORIES).map(([id, c]) => `<button type="button" class="pchip cat-${id}${cat === id ? ' on' : ''}" data-cat="${id}"><i class="cat-dot"></i>${c.label}</button>`).join('');
   $('#byYear').hidden = !bday;
   $('#repeatPick').classList.toggle('muted', bday);
 }
@@ -847,7 +909,7 @@ function openReview() {
       <div class="bar-track"><div class="bar-plan" style="height:${(d.planned / max) * 100}%"></div><div class="bar-done" style="height:${(d.done / max) * 100}%"></div></div>
       <span>${WD_SHORT[i]}</span></div>`).join('')}</div>
     ${best.done ? `<p class="muted center">Самый продуктивный день — <b>${fmt(fromKey(best.k), { weekday: 'long' })}</b> (${best.done})</p>` : ''}
-    ${Object.keys(cats).length ? `<div class="cat-sum">${Object.entries(cats).map(([c, n]) => `<span class="pchip cat-${c} on"><i class="em">${CATEGORIES[c].emoji}</i>${CATEGORIES[c].label} · ${n}</span>`).join('')}</div>` : ''}
+    ${Object.keys(cats).length ? `<div class="cat-sum">${Object.entries(cats).map(([c, n]) => `<span class="pchip cat-${c} on"><i class="cat-dot"></i>${CATEGORIES[c].label} · ${n}</span>`).join('')}</div>` : ''}
     <div class="sheet-actions"><span class="spacer"></span><button class="btn-primary" data-action="sheet-close">Вперёд, к новой неделе</button></div>`;
   closeSheets();
   openSheet('#reviewSheet');
@@ -1004,7 +1066,7 @@ function renderChips() {
   const chips = [`<span class="qchip${p.date || p.noDate ? ' hit' : ''}">${p.kind === 'birthday' ? '🎂 ' : ''}${esc(shortDate(dk))}</span>`];
   if (p.time) chips.push(`<span class="qchip hit">${p.time}</span>`);
   if (p.repeat && p.kind !== 'birthday') chips.push(`<span class="qchip hit">↻ ${esc(describeRepeat(p.repeat, dk || todayKey()))}</span>`);
-  if (p.category) chips.push(`<span class="qchip hit">${CATEGORIES[p.category].emoji}</span>`);
+  if (p.category) chips.push(`<span class="qchip hit cat-${p.category}"><i class="cat-dot"></i>${CATEGORIES[p.category].label}</span>`);
   if (p.priority) chips.push(`<span class="qchip hit p${p.priority}">${'!'.repeat(p.priority)}</span>`);
   $('#qaChips').innerHTML = chips.join('');
 }
@@ -1180,7 +1242,20 @@ function checkReminders() {
 const actions = {
   toggle: (el) => toggleTask(el.dataset.id, el.dataset.k || null, el),
   edit: (el) => openTask(el.dataset.id, el.dataset.k || null),
-  'open-day': (el) => openDay(el.dataset.key),
+  'open-day': (el) => { cursor = fromKey(el.dataset.key); setView('day'); },
+  'pick-day': (el) => {
+    const k = el.dataset.key;
+    const dir = k > toKey(cursor) ? 1 : -1;
+    cursor = fromKey(k);
+    animate(dir > 0 ? 'slide-l' : 'slide-r');
+    render();
+  },
+  'week-prev': () => { cursor = addDays(cursor, -7); animate('slide-r'); render(); },
+  'week-next': () => { cursor = addDays(cursor, 7); animate('slide-l'); render(); },
+  'to-month': () => setView('month'),
+  'side-month': (el) => { cursor = new Date(+el.dataset.y, +el.dataset.m, 1); setView('month'); },
+  'side-prev': () => { const b = sideMonth || cursor; sideMonth = new Date(b.getFullYear(), b.getMonth() - 1, 1); renderSide(); },
+  'side-next': () => { const b = sideMonth || cursor; sideMonth = new Date(b.getFullYear(), b.getMonth() + 1, 1); renderSide(); },
   'goto-month': (el) => { cursor = new Date(cursor.getFullYear(), +el.dataset.m, 1); setView('month'); },
   'open-day-view': () => { cursor = fromKey(openDayKey); closeSheets(); setView('day'); },
   prev: () => step(-1),
@@ -1443,7 +1518,8 @@ function toastUndo(msg, undo) {
   if (fixed) persist();
 }
 
-if (matchMedia('(max-width: 1099px)').matches) prefs.notesOpen = false;
+// в «Фокусе» заметки — выезжающая панель, при запуске всегда закрыта
+prefs.notesOpen = false;
 $('[data-pane="someday"]').dataset.drop = 'none';
 
 hydrateIcons();

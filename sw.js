@@ -3,7 +3,7 @@
 // Шрифты и библиотека облака (с зафиксированной версией): берём из кэша, сеть — только в первый раз.
 // При каждом обновлении приложения меняем VERSION — тогда все файлы перекачаются заново.
 
-const VERSION = 'lumen-v7';
+const VERSION = 'lumen-v9';
 const RUNTIME = 'lumen-runtime-v1';
 const ASSETS = [
   './', 'index.html', 'css/styles.css',

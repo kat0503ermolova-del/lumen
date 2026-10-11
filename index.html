@@ -36,13 +36,6 @@
         <div class="greet" id="greet">Добрый день</div>
         <div class="today-line" id="todayLine"></div>
       </div>
-      <nav class="seg" id="viewSeg" role="tablist" aria-label="Вид календаря">
-        <button role="tab" data-view="day">День</button>
-        <button role="tab" data-view="week">Неделя</button>
-        <button role="tab" data-view="month">Месяц</button>
-        <button role="tab" data-view="year">Год</button>
-        <span class="seg-pill" aria-hidden="true"></span>
-      </nav>
       <div class="actions">
         <button class="icon-btn" data-action="search" title="Поиск (/)" aria-label="Поиск"><span class="i-search"></span></button>
         <button class="icon-btn" data-action="themes" title="Оформление" aria-label="Оформление"><span class="i-palette"></span></button>
@@ -53,7 +46,17 @@
 
     <div class="layout" id="layout">
       <main class="main">
-        <section class="quote glass" id="quote" aria-live="polite"></section>
+        <div class="focus-bar">
+          <nav class="seg" id="viewSeg" role="tablist" aria-label="Вид календаря">
+            <button role="tab" data-view="day">День</button>
+            <button role="tab" data-view="week">Неделя</button>
+            <button role="tab" data-view="month">Месяц</button>
+            <button role="tab" data-view="year">Год</button>
+            <span class="seg-pill" aria-hidden="true"></span>
+          </nav>
+          <button class="chip-btn" data-action="today">Сегодня</button>
+        </div>
+        <div class="strip" id="strip"></div>
         <div id="banners"></div>
         <div class="view-head">
           <div class="nav">
@@ -61,11 +64,16 @@
             <h1 id="viewTitle"></h1>
             <button class="icon-btn sm" data-action="next" aria-label="Вперёд"><span class="i-right"></span></button>
           </div>
-          <button class="chip-btn" data-action="today">Сегодня</button>
         </div>
         <div class="filters" id="filters"></div>
         <div id="viewBody" class="view-body"></div>
       </main>
+
+      <aside class="side" id="side" aria-label="Обзор">
+        <div id="sideCal"></div>
+        <div id="sideNext"></div>
+        <section class="quote" id="quote" aria-live="polite"></section>
+      </aside>
 
       <aside class="notes glass" id="notesPanel" aria-label="Заметки">
         <div class="notes-head">
