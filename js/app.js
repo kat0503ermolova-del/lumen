@@ -19,7 +19,7 @@ const db = readJSON(DATA_KEY, null) || { tasks: [], notes: [] };
 db.tasks ||= [];
 db.notes ||= [];
 const prefs = Object.assign({
-  theme: 'premium', view: 'day', notesOpen: true, quoteShift: 0, filter: null,
+  theme: 'gold', view: 'day', myQuotes: [], notesOpen: true, quoteShift: 0, filter: null,
   panelTab: 'notes', briefAuto: true, briefSeen: null, reviewSeen: null, bannerHidden: null, remind: false,
 }, readJSON(PREFS_KEY, {}));
 
@@ -48,18 +48,20 @@ const CATEGORIES = {
 };
 
 const THEMES = [
-  ['premium', 'Премиум', 'Шампань, пудра, лаванда'],
-  ['sunset', 'Закат', 'Коралл и розовое небо'],
-  ['neon', 'Неон', 'Заряжающий, для работы'],
-  ['midnight', 'Полночь', 'Глубокий синий и звёзды'],
-  ['auto', 'Авто', 'Днём Премиум, вечером Неон'],
+  ['gold', 'Золото', 'Слоновая кость и тонкое золото'],
+  ['pink', 'Розовый', 'Чистый розовый, без лишнего'],
+  ['night', 'Ночь', 'Тёмная, с ярким градиентом'],
+  ['auto', 'Авто', 'Днём Золото, вечером Ночь'],
 ];
+// старые названия тем из прошлых версий
+prefs.theme = { premium: 'gold', sunset: 'pink', neon: 'night', midnight: 'night' }[prefs.theme] || prefs.theme;
+if (!THEMES.some(([id]) => id === prefs.theme)) prefs.theme = 'gold';
 const effectiveTheme = () => {
   if (prefs.theme !== 'auto') return prefs.theme;
   const h = new Date().getHours();
-  return h >= 7 && h < 20 ? 'premium' : 'neon';
+  return h >= 7 && h < 20 ? 'gold' : 'night';
 };
-const THEME_COLOR = { premium: '#f8f0ea', sunset: '#fff0ea', neon: '#06050c', midnight: '#070b1a' };
+const THEME_COLOR = { gold: '#f9f6f0', pink: '#fff5f8', night: '#07060f' };
 
 /* ───────────── Утилиты ───────────── */
 
@@ -284,7 +286,7 @@ function taskRow(it, { showDate = false, compact = false } = {}) {
   if (bday && it.k && ageOn(t, it.k)) meta.push(`<span>исполняется ${ageOn(t, it.k)}</span>`);
   if (t.repeat && !bday && !compact) meta.push(`<span>${icon('repeat')}${esc(describeRepeat(t.repeat, t.date))}</span>`);
   else if (t.repeat && !bday) meta.push(`<span>${icon('repeat')}</span>`);
-  if (t.category && CATEGORIES[t.category] && !compact) meta.push(`<span>${CATEGORIES[t.category].emoji}\u00a0${CATEGORIES[t.category].label}</span>`);
+  if (t.category && CATEGORIES[t.category] && !compact) meta.push(`<span><i class="em">${CATEGORIES[t.category].emoji}</i>${CATEGORIES[t.category].label}</span>`);
   if (t.note && !compact) meta.push(`<span>${icon('note')}</span>`);
   const cls = ['task', it.done && 'done', compact && 'compact', `p${t.priority || 0}`, t.category && `cat-${t.category}`, bday && 'bday'].filter(Boolean).join(' ');
   return `<div class="${cls}" ${dragAttr(it)}>
@@ -488,10 +490,22 @@ function renderQuote() {
   const [text, author] = quoteFor(dayIndex + prefs.quoteShift);
   $('#quote').innerHTML = `<div class="q-label">Вдохновение дня</div>
     <blockquote>${esc(text)}</blockquote>
-    <div class="q-foot"><span class="q-author">— ${esc(author)}</span>
+    <div class="q-foot">${author ? `<span class="q-author">— ${esc(author)}</span>` : ''}
     <button class="icon-btn xs" data-action="quote-next" title="Другая цитата" aria-label="Другая цитата">${icon('refresh')}</button></div>`;
 }
-const quoteFor = (i) => QUOTES[((i % QUOTES.length) + QUOTES.length) % QUOTES.length];
+// свои цитаты идут вперемешку со встроенными: каждая третья — твоя
+function quoteFor(i) {
+  const mine = prefs.myQuotes || [];
+  const pick = (list, n) => list[((n % list.length) + list.length) % list.length];
+  if (mine.length && ((i % 3) + 3) % 3 === 0) return pick(mine, Math.floor(i / 3));
+  return pick(QUOTES, i);
+}
+function parseMyQuotes(text) {
+  return text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((l) => {
+    const m = l.match(/^(.*\S)\s+[—–-]\s+(.+)$/);
+    return m ? [m[1].replace(/^[«"]|[»"]$/g, ''), m[2]] : [l.replace(/^[«"]|[»"]$/g, ''), ''];
+  });
+}
 
 function renderFilters() {
   const used = new Set(db.tasks.map((t) => t.category).filter(Boolean));
@@ -499,7 +513,7 @@ function renderFilters() {
   if (!used.size) { $('#filters').innerHTML = ''; return; }
   $('#filters').innerHTML = `<button class="fchip${!prefs.filter ? ' on' : ''}" data-action="filter" data-cat="">Все</button>`
     + Object.entries(CATEGORIES).filter(([id]) => used.has(id))
-      .map(([id, c]) => `<button class="fchip cat-${id}${prefs.filter === id ? ' on' : ''}" data-action="filter" data-cat="${id}">${c.emoji}\u00a0${c.label}</button>`).join('');
+      .map(([id, c]) => `<button class="fchip cat-${id}${prefs.filter === id ? ' on' : ''}" data-action="filter" data-cat="${id}"><i class="em">${c.emoji}</i>${c.label}</button>`).join('');
 }
 
 /* ───────────── Панель: заметки и «когда-нибудь» ───────────── */
@@ -651,7 +665,7 @@ function renderPickers() {
   }
   const cat = form.dataset.cat;
   $('#catPick').innerHTML = `<button type="button" class="pchip${!cat ? ' on' : ''}" data-cat="">Без категории</button>`
-    + Object.entries(CATEGORIES).map(([id, c]) => `<button type="button" class="pchip cat-${id}${cat === id ? ' on' : ''}" data-cat="${id}">${c.emoji}\u00a0${c.label}</button>`).join('');
+    + Object.entries(CATEGORIES).map(([id, c]) => `<button type="button" class="pchip cat-${id}${cat === id ? ' on' : ''}" data-cat="${id}"><i class="em">${c.emoji}</i>${c.label}</button>`).join('');
   $('#byYear').hidden = !bday;
   $('#repeatPick').classList.toggle('muted', bday);
 }
@@ -781,7 +795,7 @@ function renderBrief() {
       <div class="brief-date">${cap(fmt(new Date(), { weekday: 'long', day: 'numeric', month: 'long' }))}</div>
       <div class="hchips">${holidayChips(tk)}</div>
     </div>
-    <blockquote class="brief-quote">${esc(text)}<cite>— ${esc(author)}</cite></blockquote>
+    <blockquote class="brief-quote">${esc(text)}${author ? `<cite>— ${esc(author)}</cite>` : ''}</blockquote>
     <h4>Главное сегодня</h4>
     ${top.length ? top.map((it) => taskRow(it)).join('') : '<div class="empty small">День свободен. Запланируй что-нибудь приятное 🌸</div>'}
     ${work.length > 3 ? `<div class="brief-more">и ещё ${work.length - 3} ${plural(work.length - 3, 'задача', 'задачи', 'задач')}</div>` : ''}
@@ -836,7 +850,7 @@ function openReview() {
       <div class="bar-track"><div class="bar-plan" style="height:${(d.planned / max) * 100}%"></div><div class="bar-done" style="height:${(d.done / max) * 100}%"></div></div>
       <span>${WD_SHORT[i]}</span></div>`).join('')}</div>
     ${best.done ? `<p class="muted center">Самый продуктивный день — <b>${fmt(fromKey(best.k), { weekday: 'long' })}</b> (${best.done})</p>` : ''}
-    ${Object.keys(cats).length ? `<div class="cat-sum">${Object.entries(cats).map(([c, n]) => `<span class="pchip cat-${c} on">${CATEGORIES[c].emoji}\u00a0${CATEGORIES[c].label} · ${n}</span>`).join('')}</div>` : ''}
+    ${Object.keys(cats).length ? `<div class="cat-sum">${Object.entries(cats).map(([c, n]) => `<span class="pchip cat-${c} on"><i class="em">${CATEGORIES[c].emoji}</i>${CATEGORIES[c].label} · ${n}</span>`).join('')}</div>` : ''}
     <div class="sheet-actions"><span class="spacer"></span><button class="btn-primary" data-action="sheet-close">Вперёд, к новой неделе</button></div>`;
   closeSheets();
   openSheet('#reviewSheet');
@@ -850,7 +864,12 @@ function openThemes() {
   $('#themeBody').innerHTML = `<div class="sheet-grab"></div><h3>Оформление</h3>
     <div class="theme-grid">${THEMES.map(([id, name, desc]) => `<button class="theme-card${prefs.theme === id ? ' on' : ''}" data-action="set-theme" data-theme="${id}">
       <span class="swatch sw-${id}"></span><b>${name}</b><small>${desc}</small></button>`).join('')}</div>
-    <div class="sheet-actions"><span class="spacer"></span><button class="btn-ghost" data-action="sheet-close">Готово</button></div>`;
+    <div class="field my-quotes">
+      <span>Мои цитаты</span>
+      <p class="muted small">Любимые строчки из песен, фильмов, от подруг — по одной на строку. Автора можно добавить через тире: <i>Текст — Автор</i>. Они будут появляться среди цитат дня.</p>
+      <textarea id="myQuotes" placeholder="Сначала кофе, потом мир — Я">${esc((prefs.myQuotes || []).map(([t, a]) => (a ? `${t} — ${a}` : t)).join('\n'))}</textarea>
+    </div>
+    <div class="sheet-actions"><span class="spacer"></span><button class="btn-primary" data-action="save-quotes">Готово</button></div>`;
   closeSheets();
   openSheet('#themeSheet');
 }
@@ -1177,6 +1196,24 @@ const actions = {
   search: () => { closeSheets(); $('#searchInput').value = ''; renderSearch(); openSheet('#searchSheet'); setTimeout(() => $('#searchInput').focus(), 50); },
   'open-note': (el) => { closeSheets(); prefs.notesOpen = true; prefs.panelTab = 'notes'; $('#noteSearch').value = el.dataset.q; savePrefs(); renderLayout(); renderSomeday(); renderNotes(); },
   'sheet-close': () => closeSheets(),
+  'save-quotes': () => {
+    const before = JSON.stringify(prefs.myQuotes || []);
+    prefs.myQuotes = parseMyQuotes($('#myQuotes').value);
+    savePrefs();
+    closeSheets();
+    if (JSON.stringify(prefs.myQuotes) !== before) {
+      // сразу показываем одну из своих цитат
+      if (prefs.myQuotes.length) {
+        const day = Math.floor(fromKey(todayKey()).getTime() / 864e5);
+        let shift = 0;
+        while (((day + shift) % 3 + 3) % 3 !== 0) shift++;
+        prefs.quoteShift = shift;
+        savePrefs();
+      }
+      renderQuote();
+      toast(prefs.myQuotes.length ? `Твоих цитат: ${prefs.myQuotes.length} ✨` : 'Свои цитаты убраны');
+    }
+  },
   filter: (el) => { prefs.filter = el.dataset.cat || null; savePrefs(); render(); },
   'hide-banners': () => { prefs.bannerHidden = todayKey(); savePrefs(); renderBanners(); },
   'quote-next': () => { prefs.quoteShift++; savePrefs(); renderQuote(); },

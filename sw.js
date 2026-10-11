@@ -1,5 +1,5 @@
 // Офлайн-кэш: сначала сеть, при её отсутствии — сохранённая копия
-const CACHE = 'lumen-v4';
+const CACHE = 'lumen-v5';
 const ASSETS = ['./', 'index.html', 'css/styles.css', 'js/app.js', 'js/parse.js', 'js/recur.js', 'js/sync.js', 'js/data.js', 'js/confetti.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-180.png'];
 
 self.addEventListener('install', (e) => {

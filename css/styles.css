@@ -15,7 +15,7 @@
 
 /* Премиум: шампань, пудра, лаванда */
 :root,
-[data-theme="premium"] {
+[data-theme="gold"] {
   color-scheme: light;
   --bg: #f8f0ea;
   --text: #2b2230;
@@ -45,7 +45,7 @@
 }
 
 /* Неон: чёрный бархат и электрические акценты */
-[data-theme="neon"] {
+[data-theme="night"] {
   color-scheme: dark;
   --bg: #06050c;
   --text: #f5f3ff;
@@ -186,8 +186,8 @@ body.notes-open [data-action="notes"].icon-btn { color: var(--accent); }
   transform: translateX(calc(var(--i) * 100%));
   transition: transform .35s var(--ease);
 }
-[data-theme="neon"] .seg-pill { background: var(--grad); }
-[data-theme="neon"] .seg button.on { color: #fff; }
+[data-theme="night"] .seg-pill { background: var(--grad); }
+[data-theme="night"] .seg button.on { color: #fff; }
 
 .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
 .main { min-width: 0; }
@@ -254,7 +254,7 @@ body.notes-open [data-action="notes"].icon-btn { color: var(--accent); }
 .ring circle { fill: none; stroke-width: 5; }
 .ring-bg { stroke: var(--line); }
 .ring-fg { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset .6s var(--ease); filter: drop-shadow(var(--glow)); }
-[data-theme="neon"] .ring-fg { stroke: var(--today); }
+[data-theme="night"] .ring-fg { stroke: var(--today); }
 .ring span { font-size: 12px; font-weight: 700; color: var(--text-2); }
 
 .group { margin-top: 6px; }
@@ -393,7 +393,7 @@ details[open] > summary::before { transform: rotate(90deg); }
 .yd.is-off { color: var(--off); }
 .yd.has-hol { font-weight: 700; }
 .yd.has-tasks::after { content: ""; position: absolute; bottom: 1px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
-[data-theme="neon"] .yd.has-tasks::after { background: var(--today); box-shadow: 0 0 6px var(--today); }
+[data-theme="night"] .yd.has-tasks::after { background: var(--today); box-shadow: 0 0 6px var(--today); }
 .yd.is-today { background: var(--grad); color: #fff; font-weight: 700; box-shadow: var(--glow); }
 .yd.is-today::after { background: #fff; }
 
@@ -459,7 +459,7 @@ dialog.sheet {
   overflow: visible;
 }
 dialog.sheet::backdrop { background: rgba(20, 10, 20, .25); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
-[data-theme="neon"] dialog.sheet::backdrop { background: rgba(0, 0, 0, .55); }
+[data-theme="night"] dialog.sheet::backdrop { background: rgba(0, 0, 0, .55); }
 dialog.sheet[open] { animation: sheetIn .35s var(--ease); }
 @keyframes sheetIn { from { opacity: 0; transform: translateY(24px) scale(.98); } }
 .sheet-inner {
@@ -527,8 +527,8 @@ dialog.sheet[open] { animation: sheetIn .35s var(--ease); }
 }
 .toast.show { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
 .toast .link { color: var(--b1); margin-left: 8px; }
-[data-theme="neon"] .toast { background: var(--grad); color: #fff; box-shadow: var(--glow); }
-[data-theme="neon"] .toast .link { color: #fff; text-decoration: underline; }
+[data-theme="night"] .toast { background: var(--grad); color: #fff; box-shadow: var(--glow); }
+[data-theme="night"] .toast .link { color: #fff; text-decoration: underline; }
 
 .scrim { display: none; }
 
@@ -625,7 +625,7 @@ dialog.sheet[open] { animation: sheetIn .35s var(--ease); }
 /* ═════════════ v2: новые темы ═════════════ */
 
 /* Закат: коралл, розовое небо, персик */
-[data-theme="sunset"] {
+[data-theme="pink"] {
   color-scheme: light;
   --bg: #fff0ea;
   --text: #33202a;
@@ -648,39 +648,12 @@ dialog.sheet[open] { animation: sheetIn .35s var(--ease); }
   --glow: none;
 }
 
-/* Полночь: глубокий синий, фиолет, звёздный свет */
-[data-theme="midnight"] {
-  color-scheme: dark;
-  --bg: #070b1a;
-  --text: #eef1ff;
-  --text-2: #c2c8ea;
-  --muted: #8189b0;
-  --line: rgba(255, 255, 255, .07);
-  --glass: rgba(18, 24, 52, .5);
-  --glass-2: rgba(30, 38, 78, .66);
-  --glass-solid: rgba(14, 19, 42, .96);
-  --stroke: rgba(255, 255, 255, .09);
-  --shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 20px 50px -20px rgba(0, 0, 0, .8);
-  --accent: #8fa8ff;
-  --grad: linear-gradient(120deg, #6a8dff 0%, #b388ff 55%, #ff8fd8 100%);
-  --grad-soft: linear-gradient(120deg, rgba(106, 141, 255, .18), rgba(179, 136, 255, .16), rgba(255, 143, 216, .12));
-  --off: #ff8fb8;
-  --today: #8fa8ff;
-  --b1: #3a5bff; --b2: #8a5cff; --b3: #00b4ff; --b4: #ff7ad9;
-  --p1: #6fd3ff; --p2: #ffd36f; --p3: #ff7aa8;
-  --blob-op: .3;
-  --glow: 0 0 20px rgba(143, 168, 255, .4);
-}
-[data-theme="midnight"] .seg-pill { background: var(--grad); }
-[data-theme="midnight"] .seg button.on { color: #fff; }
-[data-theme="midnight"] .toast { background: var(--grad); color: #fff; }
 
 /* Цвета категорий */
 :root {
   --c-work: #6f8ff0; --c-home: #e3994f; --c-personal: #ec6f9e; --c-beauty: #b48cf0; --c-health: #4fbf8f;
 }
-[data-theme="neon"], [data-theme="midnight"] {
-  --c-work: #5ab8ff; --c-home: #ffc24d; --c-personal: #ff5fb0; --c-beauty: #c58bff; --c-health: #48f0b0;
+[data-theme="night"],   --c-work: #5ab8ff; --c-home: #ffc24d; --c-personal: #ff5fb0; --c-beauty: #c58bff; --c-health: #48f0b0;
 }
 .cat-work { --cat: var(--c-work); }
 .cat-home { --cat: var(--c-home); }
@@ -815,12 +788,10 @@ body.is-dragging [data-drop] { transition: background .15s, box-shadow .15s; }
 .theme-card small { font-size: 12px; color: var(--muted); line-height: 1.3; }
 .swatch { width: 100%; height: 64px; border-radius: 12px; position: relative; overflow: hidden; }
 .swatch::after { content: ""; position: absolute; left: 10px; right: 30%; bottom: 10px; height: 14px; border-radius: 7px; background: rgba(255, 255, 255, .55); }
-.sw-premium { background: radial-gradient(circle at 20% 20%, #f3cf8e, transparent 60%), radial-gradient(circle at 80% 40%, #f5adc2, transparent 60%), radial-gradient(circle at 40% 100%, #cdb8f6, transparent 60%), #f8f0ea; }
-.sw-sunset { background: radial-gradient(circle at 20% 20%, #ffb88a, transparent 60%), radial-gradient(circle at 80% 40%, #ff7f9e, transparent 60%), radial-gradient(circle at 40% 100%, #d79cf0, transparent 60%), #fff0ea; }
-.sw-neon { background: radial-gradient(circle at 20% 20%, rgba(255, 43, 214, .7), transparent 55%), radial-gradient(circle at 85% 50%, rgba(0, 229, 255, .6), transparent 55%), #06050c; }
-.sw-midnight { background: radial-gradient(circle at 25% 25%, rgba(58, 91, 255, .7), transparent 55%), radial-gradient(circle at 80% 70%, rgba(255, 122, 217, .45), transparent 55%), #070b1a; }
-.sw-neon::after, .sw-midnight::after { background: rgba(255, 255, 255, .15); }
-.sw-auto { background: linear-gradient(110deg, #f8f0ea 0 48%, #06050c 52%); }
+.sw-gold { background: radial-gradient(circle at 20% 20%, #f3cf8e, transparent 60%), radial-gradient(circle at 80% 40%, #f5adc2, transparent 60%), radial-gradient(circle at 40% 100%, #cdb8f6, transparent 60%), #f8f0ea; }
+.sw-pink { background: radial-gradient(circle at 20% 20%, #ffb88a, transparent 60%), radial-gradient(circle at 80% 40%, #ff7f9e, transparent 60%), radial-gradient(circle at 40% 100%, #d79cf0, transparent 60%), #fff0ea; }
+.sw-night { background: radial-gradient(circle at 20% 20%, rgba(255, 43, 214, .7), transparent 55%), radial-gradient(circle at 85% 50%, rgba(0, 229, 255, .6), transparent 55%), #06050c; }
+.sw-night::after, .sw-auto { background: linear-gradient(110deg, #f8f0ea 0 48%, #06050c 52%); }
 .sw-auto::before { content: "☀︎ ☾"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 20px; color: #c48868; letter-spacing: 22px; padding-left: 22px; }
 .sw-auto::after { display: none; }
 
@@ -857,3 +828,176 @@ body.is-dragging [data-drop] { transition: background .15s, box-shadow .15s; }
 .sync-dot.syncing { background: #f0b44c; }
 .sync-dot.error { background: var(--off); }
 .muted.small { font-size: 12.5px; }
+
+/* ═════════════ v3: минимализм ═════════════ */
+
+:root {
+  --font: "Manrope", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --display: "Manrope", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  --serif: "Cormorant Garamond", "New York", ui-serif, Georgia, serif;
+  --r-lg: 20px;
+}
+
+/* Золото: слоновая кость, шампань, тонкое золото */
+:root, [data-theme="gold"] {
+  color-scheme: light;
+  --bg: #f9f6f0;
+  --text: #1f1b16;
+  --text-2: #5d5447;
+  --muted: #a39886;
+  --line: rgba(70, 52, 20, .08);
+  --glass: rgba(255, 255, 255, .6);
+  --glass-2: rgba(255, 255, 255, .86);
+  --glass-solid: rgba(252, 250, 246, .97);
+  --stroke: rgba(255, 255, 255, .9);
+  --shadow: 0 1px 2px rgba(80, 60, 20, .04), 0 10px 32px -16px rgba(120, 90, 40, .2);
+  --accent: #b08d57;
+  --grad: linear-gradient(120deg, #cfae72 0%, #a9854d 100%);
+  --grad-soft: none;
+  --off: #b0614f;
+  --today: #b08d57;
+  --b1: #efdcb4; --b2: #f4e9d3; --b3: #efdcb4; --b4: #f4e9d3;
+  --p1: #8d9cb2; --p2: #c9a467; --p3: #b4573f;
+  --c-work: #8d9cb2; --c-home: #c9a467; --c-personal: #c98b8b; --c-beauty: #b39cc0; --c-health: #8fb39a;
+  --blob-op: .6;
+  --glow: none;
+}
+
+/* Розовый: один чистый розовый, без примесей */
+[data-theme="pink"] {
+  color-scheme: light;
+  --bg: #fff5f8;
+  --text: #2b1d23;
+  --text-2: #6e5059;
+  --muted: #b896a2;
+  --line: rgba(140, 40, 80, .08);
+  --glass: rgba(255, 255, 255, .6);
+  --glass-2: rgba(255, 255, 255, .86);
+  --glass-solid: rgba(255, 250, 252, .97);
+  --stroke: rgba(255, 255, 255, .9);
+  --shadow: 0 1px 2px rgba(140, 40, 80, .04), 0 10px 32px -16px rgba(220, 80, 130, .22);
+  --accent: #e2628c;
+  --grad: linear-gradient(120deg, #f08aab 0%, #e2628c 100%);
+  --grad-soft: none;
+  --off: #e2628c;
+  --today: #e2628c;
+  --b1: #ffd0de; --b2: #ffe2ea; --b3: #ffd0de; --b4: #ffe2ea;
+  --p1: #f2b3c7; --p2: #ea84a6; --p3: #d1406f;
+  --c-work: #c97a96; --c-home: #f0a0b8; --c-personal: #e2628c; --c-beauty: #f5b8ca; --c-health: #b85c7c;
+  --blob-op: .65;
+  --glow: none;
+}
+
+/* Ночь: глубокий тёмный и яркий градиент */
+[data-theme="night"] {
+  color-scheme: dark;
+  --bg: #07060f;
+  --text: #f6f4ff;
+  --text-2: #cbc7e8;
+  --muted: #8c88aa;
+  --line: rgba(255, 255, 255, .08);
+  --glass: rgba(20, 16, 38, .5);
+  --glass-2: rgba(36, 28, 66, .66);
+  --glass-solid: rgba(16, 13, 30, .96);
+  --stroke: rgba(255, 255, 255, .1);
+  --shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 20px 50px -24px rgba(0, 0, 0, .8);
+  --accent: #ff4fb4;
+  --grad: linear-gradient(120deg, #ff3cac 0%, #a855f7 48%, #22d3ee 100%);
+  --grad-soft: linear-gradient(120deg, rgba(255, 60, 172, .2), rgba(168, 85, 247, .18), rgba(34, 211, 238, .16));
+  --off: #ff6aa8;
+  --today: #22d3ee;
+  --b1: #ff2bd6; --b2: #7c3aed; --b3: #06b6d4; --b4: #ff2bd6;
+  --p1: #22d3ee; --p2: #facc15; --p3: #ff3cac;
+  --c-work: #38bdf8; --c-home: #facc15; --c-personal: #ff4fb4; --c-beauty: #c084fc; --c-health: #34d399;
+  --blob-op: .5;
+  --glow: 0 0 24px rgba(255, 60, 172, .45);
+}
+[data-theme="night"] .seg-pill { background: var(--grad); }
+[data-theme="night"] .seg button.on { color: #fff; }
+
+/* Фон: один мягкий отсвет вместо пятен; ночью — три ярких */
+.blob { filter: blur(110px); animation-duration: 40s; }
+.b3, .b4 { display: none; }
+.b1 { width: 60vmax; height: 60vmax; top: -30vmax; left: -15vmax; }
+.b2 { width: 50vmax; height: 50vmax; top: auto; bottom: -30vmax; right: -20vmax; opacity: calc(var(--blob-op) * .7); }
+[data-theme="night"] .b3 { display: block; }
+
+/* Типографика */
+body { letter-spacing: -0.005em; font-feature-settings: "ss01", "cv11"; }
+.greet {
+  font-family: var(--serif); font-weight: 600; font-size: 32px; letter-spacing: -0.01em; line-height: 1.1;
+  background: none; -webkit-background-clip: initial; background-clip: initial; color: var(--text);
+}
+[data-theme="night"] .greet { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.today-line { font-size: 13.5px; color: var(--muted); margin-top: 4px; }
+.nav h1, .day-big, .wn, .ytitle, .stat b, .act-title, .sheet-inner h3, .notes-head h2, .sheet-title {
+  font-family: var(--serif); font-weight: 600; letter-spacing: -0.01em;
+}
+.nav h1 { font-size: 32px; }
+.day-big { font-size: 42px; line-height: 1.05; }
+.wn { font-size: 26px; }
+.ytitle { font-size: 19px; }
+.sheet-inner h3 { font-size: 26px; }
+.sheet-title { font-size: 26px; }
+.act-title { font-size: 24px; }
+.stat b { font-size: 30px; }
+.greet.big { font-size: 40px; }
+.day-kicker, .group-title, .field > span, .mhead span, .wd, .ywd { letter-spacing: .08em; }
+.task-title { font-weight: 500; font-size: 15.5px; }
+
+/* Цитата — одна строка без рамки */
+.quote {
+  background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none;
+  padding: 0 2px; margin: 4px 0 26px; overflow: visible;
+}
+.quote::before, .q-label { display: none; }
+.quote blockquote { margin: 0 0 4px; font-size: clamp(21px, 2.4vw, 27px); font-weight: 500; line-height: 1.25; color: var(--text); }
+.q-foot { justify-content: flex-start; gap: 6px; font-size: 13px; }
+.q-foot .icon-btn { opacity: 0; transition: opacity .2s; }
+.quote:hover .q-foot .icon-btn { opacity: 1; }
+@media (hover: none) { .q-foot .icon-btn { opacity: .55; } }
+
+/* Шапка и кнопки — без лишних кружков */
+.actions { gap: 2px; }
+.actions .icon-btn { background: transparent; border-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.actions .icon-btn:hover { background: var(--line); }
+.view-head .icon-btn.sm { background: transparent; border-color: transparent; }
+.view-head .icon-btn.sm:hover { background: var(--line); }
+.chip-btn { background: transparent; border-color: var(--line); }
+.seg { border-color: transparent; background: var(--line); -webkit-backdrop-filter: none; backdrop-filter: none; }
+.seg-pill { box-shadow: 0 1px 4px rgba(0, 0, 0, .06), var(--glow); }
+
+/* Карточки и сетки — тише */
+.glass { -webkit-backdrop-filter: blur(22px) saturate(140%); backdrop-filter: blur(22px) saturate(140%); }
+.mcell { background: transparent; }
+.mcell:hover { background: var(--line); }
+.mcell.is-off { background: color-mix(in srgb, var(--off) 4%, transparent); }
+.mgrid { gap: 2px; }
+.month, .ymonth, .wday { box-shadow: none; }
+.wday.is-today, .ymonth.is-current { border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.task { border-bottom-color: var(--line); }
+.check { border-width: 1.6px; }
+.hchip { font-weight: 500; }
+.banner { box-shadow: none; }
+.fchip { background: transparent; border-color: var(--line); }
+
+/* Мои цитаты */
+.my-quotes textarea { width: 100%; min-height: 110px; border: 1px solid var(--line); background: var(--glass-2); border-radius: 12px; padding: 10px 12px; font-size: 15px; outline: 0; resize: vertical; }
+.my-quotes p { margin: 4px 0 8px; }
+
+/* Образцы тем */
+.sw-gold { background: radial-gradient(circle at 25% 20%, #efdcb4, transparent 65%), #f9f6f0; }
+.sw-pink { background: radial-gradient(circle at 25% 20%, #ffc6d7, transparent 65%), #fff5f8; }
+.sw-night { background: radial-gradient(circle at 20% 25%, rgba(255, 43, 214, .8), transparent 55%), radial-gradient(circle at 60% 80%, rgba(124, 58, 237, .7), transparent 55%), radial-gradient(circle at 90% 30%, rgba(6, 182, 212, .7), transparent 55%), #07060f; }
+.sw-auto { background: linear-gradient(110deg, #f9f6f0 0 48%, #07060f 52%); }
+.sw-auto::before { color: #b08d57; }
+
+@media (max-width: 600px) {
+  .greet { font-size: 27px; }
+  .nav h1 { font-size: 26px; }
+  .day-big { font-size: 34px; }
+  .quote blockquote { font-size: 20px; }
+}
+
+.nav h1, .day-big, .wn, .ytitle, .stat b, .greet, .act-title, .sheet-inner h3, .sheet-title, .quote blockquote, .brief-quote { font-variant-numeric: lining-nums; }
+i.em { font-style: normal; margin-right: 4px; }
