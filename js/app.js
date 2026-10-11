@@ -1554,6 +1554,21 @@ import('./sync.js')
   })
   .catch((e) => { console.warn('Lumen: облако недоступно', e); onSyncStatus({ status: 'off', email: null, lastSync: 0 }); });
 
+// Страница и скрипт должны быть одной версии. Если браузер собрал смесь старых и новых файлов,
+// один раз очищаем сохранённые файлы приложения и перезагружаемся.
+const BUILD = '10';
+{
+  const pageBuild = document.querySelector('meta[name="lumen-build"]')?.content;
+  let healed = false;
+  try { healed = sessionStorage.getItem('lumen-heal') === BUILD; } catch { /* приватный режим */ }
+  if (pageBuild !== BUILD && !healed && 'caches' in window) {
+    try { sessionStorage.setItem('lumen-heal', BUILD); } catch { /* приватный режим */ }
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('lumen-v')).map((k) => caches.delete(k))))
+      .finally(() => location.reload());
+  }
+}
+
 if ('serviceWorker' in navigator && isSecureContext) {
   // когда выходит новая версия, один раз перезагружаемся, чтобы показать её
   const hadController = !!navigator.serviceWorker.controller;

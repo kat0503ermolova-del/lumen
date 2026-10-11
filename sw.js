@@ -2,20 +2,31 @@
 // Файлы приложения: сразу отдаём сохранённую копию, а свежую версию тихо подгружаем в фоне.
 // Шрифты и библиотека облака (с зафиксированной версией): берём из кэша, сеть — только в первый раз.
 // При каждом обновлении приложения меняем VERSION — тогда все файлы перекачаются заново.
+// Файлы приложения запрашиваем мимо HTTP-кэша браузера (уникальный ?v=…), чтобы не получить
+// устаревшую копию. Номер VERSION совпадает с lumen-build в index.html и BUILD в app.js.
 
-const VERSION = 'lumen-v9';
+const VERSION = 'lumen-v10';
 const RUNTIME = 'lumen-runtime-v1';
 const ASSETS = [
   './', 'index.html', 'css/styles.css',
   'js/app.js', 'js/parse.js', 'js/recur.js', 'js/sync.js', 'js/data.js', 'js/confetti.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-180.png', 'icons/icon-192.png',
 ];
+const bust = (u, tag) => {
+  const url = new URL(u, self.registration.scope);
+  url.searchParams.set('v', tag);
+  return url.href;
+};
 const IMMUTABLE_HOSTS = ['fonts.gstatic.com', 'fonts.googleapis.com', 'cdn.jsdelivr.net'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(VERSION)
-      .then((c) => c.addAll(ASSETS.map((u) => new Request(u, { cache: 'reload' }))))
+      .then((c) => Promise.all(ASSETS.map(async (u) => {
+        const res = await fetch(bust(u, VERSION), { cache: 'reload' });
+        if (!res.ok) throw new Error(`${u}: ${res.status}`);
+        await c.put(new URL(u, self.registration.scope).href, res);
+      })))
       .then(() => self.skipWaiting())
   );
 });
@@ -50,9 +61,10 @@ self.addEventListener('fetch', (e) => {
 
   e.respondWith(
     caches.open(VERSION).then(async (c) => {
-      const hit = await c.match(req, { ignoreSearch: true });
-      const fresh = fetch(req, { cache: 'no-cache' })
-        .then((res) => { if (res.ok) c.put(req, res.clone()); return res; })
+      const key = url.origin + url.pathname;
+      const hit = await c.match(key);
+      const fresh = fetch(bust(key, Date.now()), { cache: 'no-store' })
+        .then((res) => { if (res.ok) c.put(key, res.clone()); return res; })
         .catch(() => hit);
       if (hit) { e.waitUntil(fresh); return hit; }
       return fresh;
