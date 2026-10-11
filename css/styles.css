@@ -1001,3 +1001,26 @@ body { letter-spacing: -0.005em; font-feature-settings: "ss01", "cv11"; }
 
 .nav h1, .day-big, .wn, .ytitle, .stat b, .greet, .act-title, .sheet-inner h3, .sheet-title, .quote blockquote, .brief-quote { font-variant-numeric: lining-nums; }
 i.em { font-style: normal; margin-right: 4px; }
+
+/* ═════════════ v4: скорость ═════════════
+   Размытие (filter/backdrop-filter) на больших площадях — самое дорогое для iPhone и iPad.
+   Фон рисуем обычными градиентами без анимации, «стекло» оставляем только там, где оно заметно. */
+
+.blob { display: none !important; }
+.bg::before, .bg::after {
+  content: ""; position: absolute; border-radius: 50%; opacity: var(--blob-op);
+}
+.bg::before { width: 130vmax; height: 130vmax; left: -60vmax; top: -70vmax; background: radial-gradient(closest-side, var(--b1), transparent); }
+.bg::after { width: 110vmax; height: 110vmax; right: -55vmax; bottom: -60vmax; background: radial-gradient(closest-side, var(--b2), transparent); opacity: calc(var(--blob-op) * .7); }
+[data-theme="night"] .bg { background: radial-gradient(70vmax 70vmax at 105% 15%, rgba(6, 182, 212, .32), transparent 70%); }
+
+.glass, .icon-btn, .chip-btn, .seg, .fchip, .banner { -webkit-backdrop-filter: none; backdrop-filter: none; }
+.glass { background: var(--glass-2); }
+[data-theme="night"] .glass { background: rgba(26, 21, 48, .72); }
+.mcell, .wday, .yd, .task { will-change: auto; }
+dialog.sheet::backdrop { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(20, 12, 20, .32); }
+[data-theme="night"] dialog.sheet::backdrop { background: rgba(0, 0, 0, .6); }
+.sheet-inner { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--glass-solid); }
+body { transition: none; }
+.view-body.enter, .view-body.slide-l, .view-body.slide-r { animation-duration: .22s; }
+.quote.glass { background: none; }

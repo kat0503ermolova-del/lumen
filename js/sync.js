@@ -1,7 +1,7 @@
 // Синхронизация через Supabase: локальные данные остаются основными,
 // изменения отправляются в облако и приходят с других устройств в реальном времени.
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/+esm';
 
 const SUPABASE_URL = 'https://peuvobnwxmdqmhyicrrk.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_mPnOaIsJd8BAaFeVgV-GYw_62Iro77i';

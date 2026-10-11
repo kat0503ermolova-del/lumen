@@ -1,26 +1,61 @@
-// Офлайн-кэш: сначала сеть, при её отсутствии — сохранённая копия
-const CACHE = 'lumen-v5';
-const ASSETS = ['./', 'index.html', 'css/styles.css', 'js/app.js', 'js/parse.js', 'js/recur.js', 'js/sync.js', 'js/data.js', 'js/confetti.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-180.png'];
+// Офлайн и быстрый старт.
+// Файлы приложения: сразу отдаём сохранённую копию, а свежую версию тихо подгружаем в фоне.
+// Шрифты и библиотека облака (с зафиксированной версией): берём из кэша, сеть — только в первый раз.
+// При каждом обновлении приложения меняем VERSION — тогда все файлы перекачаются заново.
+
+const VERSION = 'lumen-v7';
+const RUNTIME = 'lumen-runtime-v1';
+const ASSETS = [
+  './', 'index.html', 'css/styles.css',
+  'js/app.js', 'js/parse.js', 'js/recur.js', 'js/sync.js', 'js/data.js', 'js/confetti.js',
+  'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-180.png', 'icons/icon-192.png',
+];
+const IMMUTABLE_HOSTS = ['fonts.gstatic.com', 'fonts.googleapis.com', 'cdn.jsdelivr.net'];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(VERSION)
+      .then((c) => c.addAll(ASSETS.map((u) => new Request(u, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
+  );
 });
+
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== VERSION && k !== RUNTIME).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
 });
+
 self.addEventListener('fetch', (e) => {
-  if (e.request.method !== 'GET') return;
-  const sameOrigin = new URL(e.request.url).origin === location.origin;
-  if (!sameOrigin) return; // облако и шрифты — напрямую
-  e.respondWith(
-    fetch(e.request, { cache: 'no-cache' })
-      .then((res) => {
-        if (res.ok) {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, copy));
-        }
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+
+  if (IMMUTABLE_HOSTS.includes(url.hostname)) {
+    e.respondWith(
+      caches.open(RUNTIME).then(async (c) => {
+        const hit = await c.match(req);
+        if (hit) return hit;
+        const res = await fetch(req);
+        if (res.ok || res.type === 'opaque') c.put(req, res.clone());
         return res;
       })
-      .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  if (url.origin !== location.origin) return; // Supabase API и прочее — напрямую
+
+  e.respondWith(
+    caches.open(VERSION).then(async (c) => {
+      const hit = await c.match(req, { ignoreSearch: true });
+      const fresh = fetch(req, { cache: 'no-cache' })
+        .then((res) => { if (res.ok) c.put(req, res.clone()); return res; })
+        .catch(() => hit);
+      if (hit) { e.waitUntil(fresh); return hit; }
+      return fresh;
+    })
   );
 });

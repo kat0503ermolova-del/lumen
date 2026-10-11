@@ -19,10 +19,8 @@ const wdIndex = (w) => WEEKDAYS.find(([re]) => re.test(w.toLowerCase()))[1];
 
 export const CATEGORY_TAGS = [
   [/^(раб|work|офис)/, 'work'],
-  [/^(дом|быт)/, 'home'],
-  [/^(лич|себ|я$)/, 'personal'],
-  [/^(крас|уход|бьюти)/, 'beauty'],
-  [/^(здор|спорт|фит)/, 'health'],
+  // всё остальное — личное: дом, красота, здоровье, спорт
+  [/^(лич|себ|я$|дом|быт|крас|уход|бьюти|здор|спорт|фит)/, 'personal'],
 ];
 
 export function parseQuick(input, base = new Date()) {

@@ -41,10 +41,7 @@ const uid = () => {
 
 const CATEGORIES = {
   work: { label: 'Работа', emoji: '💼' },
-  home: { label: 'Дом', emoji: '🏠' },
   personal: { label: 'Личное', emoji: '💖' },
-  beauty: { label: 'Красота', emoji: '✨' },
-  health: { label: 'Здоровье', emoji: '🌿' },
 };
 
 const THEMES = [
@@ -977,12 +974,12 @@ function showHelp(kind) {
     <ul class="examples">
       <li><b>завтра в 10</b> позвонить маме <b>!!</b></li>
       <li>отчёт <b>в пятницу</b> <b>#работа</b></li>
-      <li>йога <b>по вторникам и четвергам</b> <b>в 19</b> <b>#здоровье</b></li>
+      <li>йога <b>по вторникам и четвергам</b> <b>в 19</b> <b>#личное</b></li>
       <li>аренда <b>каждое 5 число</b> · витамины <b>каждый день</b> <b>утром</b></li>
       <li><b>др</b> Оли <b>15.10.1995</b> — день рождения с возрастом</li>
       <li>выучить испанский <b>когда-нибудь</b></li>
     </ul>
-    <p><b>!</b> <b>!!</b> <b>!!!</b> — важность · <b>#работа #дом #личное #красота #здоровье</b> — категории.</p>
+    <p><b>!</b> <b>!!</b> <b>!!!</b> — важность · <b>#работа</b> и <b>#личное</b> — категории.</p>
     <h3>Управление</h3>
     <p>Перетаскивай задачи между днями мышкой. На iPhone и iPad — <b>зажми задачу</b>, чтобы перенести, пропустить или удалить. Свайп влево/вправо листает календарь. Микрофон в строке ввода — надиктовать задачу.</p>
     <p><kbd>N</kbd> новая задача · <kbd>/</kbd> поиск · <kbd>1</kbd>–<kbd>4</kbd> вид · <kbd>←</kbd> <kbd>→</kbd> листать · <kbd>T</kbd> сегодня · <kbd>P</kbd> заметки</p>
@@ -992,7 +989,7 @@ function showHelp(kind) {
   openSheet('#helpSheet');
 }
 
-const CLAUDE_PROMPT = 'Пиши задачи списком, каждую с новой строки, без нумерации, в формате: «<когда> <что сделать> <!/!!/!!! если важно> <#работа/#дом/#личное/#красота/#здоровье>». Даты словами (сегодня, завтра, в пятницу, 15 октября), время — «в 10:30», повторы — «каждый понедельник», «по будням», «каждое 5 число».';
+const CLAUDE_PROMPT = 'Пиши задачи списком, каждую с новой строки, без нумерации, в формате: «<когда> <что сделать> <!/!!/!!! если важно> <#работа или #личное>». Даты словами (сегодня, завтра, в пятницу, 15 октября), время — «в 10:30», повторы — «каждый понедельник», «по будням», «каждое 5 число».';
 
 /* ───────────── Быстрое добавление ───────────── */
 
@@ -1431,6 +1428,13 @@ function toastUndo(msg, undo) {
 
 /* ───────────── Старт ───────────── */
 
+// раньше было пять категорий — дом, красота и здоровье теперь входят в «Личное»
+{
+  let moved = false;
+  for (const t of db.tasks) if (t.category && !CATEGORIES[t.category]) { t.category = 'personal'; t.updatedAt = Date.now(); moved = true; }
+  if (moved) save();
+}
+
 // старые версии на iPhone (без https) создавали id не в формате UUID — база такие не примет
 {
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -1475,5 +1479,11 @@ import('./sync.js')
   .catch((e) => { console.warn('Lumen: облако недоступно', e); onSyncStatus({ status: 'off', email: null, lastSync: 0 }); });
 
 if ('serviceWorker' in navigator && isSecureContext) {
+  // когда выходит новая версия, один раз перезагружаемся, чтобы показать её
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (hadController && !reloaded) { reloaded = true; location.reload(); }
+  });
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
